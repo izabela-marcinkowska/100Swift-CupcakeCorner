@@ -16,10 +16,10 @@ class Order: Codable {
         case _specialRequestEnabled = "specialRequestEnabled"
         case _extraFrosting = "extraFrosting"
         case _addSprinkles = "addSprinkles"
-        case _name = "name"
-        case _city = "city"
-        case _streetAddress = "streetAddress"
-        case _zip = "zip"
+    }
+    
+    init() {
+        loadAddressFromDefaults()
     }
     
     var type = 0
@@ -36,17 +36,49 @@ class Order: Codable {
     var extraFrosting = false
     var addSprinkles = false
     
-    var name = ""
-    var streetAddress = ""
-    var city = ""
-    var zip = ""
-    
-    var hasValidAddress: Bool {
-        if name.isEmpty || streetAddress.isEmpty || city.isEmpty || zip.isEmpty {
-            return false
-        }
-        return true
+    struct Address: Codable {
+        var name = ""
+        var streetAddress = ""
+        var city = ""
+        var zip = ""
     }
+    var address = Address()
+    
+    func loadAddressFromDefaults() {
+        if let data = UserDefaults.standard.data(forKey: "Address") {
+            let decoder = JSONDecoder()
+            
+            if let savedAdress = try? decoder.decode(Address.self, from: data) {
+                address = savedAdress
+            }
+        }
+    }
+    
+    func saveAddressToDefaults() {
+        let encoder = JSONEncoder()
+        
+        if let data = try? encoder.encode(address) {
+            UserDefaults.standard.set(data, forKey: "Address")
+        }
+    }
+        
+    
+    
+    var hasValidStreet: Bool {
+        return address.streetAddress.count >= 5
+    }
+    
+    var hasValidName: Bool {
+        return address.name.count >= 3 && address.name.count <= 30
+    }
+    
+    var hasValidCity: Bool {
+            return address.city.count >= 3 && address.city.count <= 30
+        }
+
+        var hasValidZip: Bool {
+            return address.zip.count == 5
+        }
     
     var cost: Decimal {
         var cost = Decimal(quantity) * 2

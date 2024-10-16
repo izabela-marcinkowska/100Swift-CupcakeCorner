@@ -11,6 +11,8 @@ struct CheckoutView: View {
     var order: Order
     @State private var confirmationMessage = ""
     @State private var showingConfirmation = false
+    @State private var errorMassage = ""
+    @State private var showingFetchError = false
     
     func placeOrder() async {
         guard let encoded = try? JSONEncoder().encode(order) else {
@@ -29,6 +31,8 @@ struct CheckoutView: View {
             showingConfirmation = true
         } catch {
             print("Checkout failed: \(error.localizedDescription)")
+            errorMassage = "Checkout failed"
+            showingFetchError = true
         }
     }
     
@@ -59,6 +63,11 @@ struct CheckoutView: View {
             Button("OK") { }
         } message: {
             Text(confirmationMessage)
+        }
+        .alert("Something went wrong.", isPresented: $showingFetchError) {
+            Button("OK") { }
+        } message: {
+            Text(errorMassage)
         }
         .navigationBarTitleDisplayMode(.inline)
         .scrollBounceBehavior(.basedOnSize)
